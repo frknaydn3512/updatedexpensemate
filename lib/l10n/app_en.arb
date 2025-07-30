@@ -1,0 +1,153 @@
+{
+  "@@locale": "en",
+  "appTitle": "ExpenseMate 2",
+  "settings": "Settings",
+  "language": "Language",
+  "themeSelect": "Theme Selection",
+  "systemDefault": "System Default",
+  "lightTheme": "Light Theme",
+  "darkTheme": "Dark Theme",
+  "exportCSV": "Export as CSV",
+  "exportPDF": "Export as PDF",
+  "pinChange": "Change PIN",
+  "pinSet": "Set a 4-digit PIN",
+  "pinEnter": "Enter your PIN",
+  "pinWrong": "Wrong PIN!",
+  "pinSaved": "PIN saved!",
+  "pinOld": "Current PIN",
+  "pinNew": "New PIN",
+  "pinChanged": "PIN changed successfully!",
+  "pinWrongOld": "Current PIN is incorrect!",
+  "pinWrongLength": "New PIN must be 4 digits!",
+  "cancel": "Cancel",
+  "change": "Change",
+  "deleteConfirmTitle": "Delete Confirmation",
+  "deleteConfirmContent": "Do you want to delete the expense '{title}'?",
+  "@deleteConfirmContent": {
+    "placeholders": {
+      "title": { "type": "Object" }
+    }
+  },
+  "delete": "Delete",
+  "update": "Update",
+  "save": "Save",
+  "addExpense": "Add Expense",
+  "noExpenses": "No expenses yet.",
+  "error": "Error: {error}",
+  "@error": {
+    "placeholders": {
+      "error": { "type": "Object" }
+    }
+  },
+  "totalExpense": "Total Expense",
+  "date": "Date",
+  "dateSelect": "Select Date",
+  "title": "Title",
+  "amount": "Amount",
+  "category": "Category",
+  "fillAllFields": "Please fill all fields and enter a valid amount.",
+  "barChart": "Switch to Bar Chart",
+  "pieChart": "Switch to Pie Chart",
+  "settingsTooltip": "Settings",
+  "csvExported": "CSV file saved: {filePath}",
+  "@csvExported": {
+    "placeholders": {
+      "filePath": { "type": "Object" }
+    }
+  },
+  "pdfExported": "PDF file saved: {filePath}",
+  "@pdfExported": {
+    "placeholders": {
+      "filePath": { "type": "Object" }
+    }
+  },
+  "csvExportError": "CSV export error: {error}",
+  "@csvExportError": {
+    "placeholders": {
+      "error": { "type": "Object" }
+    }
+  },
+  "pdfExportError": "PDF export error: {error}",
+  "@pdfExportError": {
+    "placeholders": {
+      "error": { "type": "Object" }
+    }
+  },
+  "errorMsg": "An error occured",
+  "pinCorrect": "PIN correct!",
+  
+  "total": "Total",
+  "mostSpentCategory": "Most Spent Category",
+  "mostExpensiveDay": "Most Expensive Day",
+  "advancedFilters": "Advanced Filters",
+  "search": "Search",
+  "dateRange": "Date Range",
+  "amountRange": "Amount Range",
+  "categories": "Categories",
+  "startDate": "Start Date",
+  "endDate": "End Date",
+  "minAmount": "Minimum Amount",
+  "maxAmount": "Maximum Amount",
+  "searchQuery": "Search Query",
+  "applyFilters": "Apply Filters",
+  "clearAllFilters": "Clear All Filters",
+  "importFromCSV": "Import from CSV",
+  "importFromPDF": "Import from PDF",
+  "budgetManagement": "Budget Management",
+  "backupManagement": "Backup Management",
+  "currency": "Currency",
+  "defaultCategory": "Default Category",
+  "defaultAlarmTime": "Default Alarm Time",
+  "categoryFilter": "Category: {category}",
+  "@categoryFilter": {
+    "placeholders": {
+      "category": { "type": "Object" }
+    }
+  },
+  "categoriesFilter": "Categories: {count}",
+  "@categoriesFilter": {
+    "placeholders": {
+      "count": { "type": "Object" }
+    }
+  },
+  "searchFilter": "Search: \"{query}\"",
+  "@searchFilter": {
+    "placeholders": {
+      "query": { "type": "Object" }
+    }
+  },
+  "notificationCategoryAmount": "Category: {category}, Amount: {amount}{currency}",
+  "@notificationCategoryAmount": {
+    "placeholders": {
+      "category": { "type": "Object" },
+      "amount": { "type": "Object" },
+      "currency": { "type": "Object" }
+    }
+  },
+  "language": "Language",
+  "themeSelect": "Theme Selection",
+  "systemDefault": "System Default",
+  "lightTheme": "Light Theme",
+  "darkTheme": "Dark Theme",
+  "exportCSV": "Export as CSV",
+  "exportPDF": "Export as PDF",
+  "pinChange": "Change PIN",
+  "pinSet": "Set a 4-digit PIN",
+  "pinEnter": "Enter your PIN",
+  "pinWrong": "Wrong PIN!",
+  "pinSaved": "PIN saved!",
+  "pinOld": "Current PIN",
+  "pinNew": "New PIN",
+  "pinChanged": "PIN changed successfully!",
+  "pinWrongOld": "Current PIN is incorrect!",
+  "pinWrongLength": "New PIN must be 4 digits!",
+  "cancel": "Cancel",
+  "change": "Change",
+  "deleteConfirmTitle": "Delete Confirmation",
+  "deleteConfirmContent": "Do you want to delete the expense '{title}'?",
+  "@deleteConfirmContent": {
+    "placeholders": {
+      "title": { "type": "Object" }
+    }
+  }
+} 

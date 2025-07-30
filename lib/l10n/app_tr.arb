@@ -1,0 +1,153 @@
+{
+  "@@locale": "tr",
+  "appTitle": "ExpenseMate 2",
+  "settings": "Ayarlar",
+  "language": "Dil",
+  "themeSelect": "Tema Seçimi",
+  "systemDefault": "Sistem Varsayılanı",
+  "lightTheme": "Açık Tema",
+  "darkTheme": "Koyu Tema",
+  "exportCSV": "CSV olarak dışa aktar",
+  "exportPDF": "PDF olarak dışa aktar",
+  "pinChange": "PIN değiştir",
+  "pinSet": "4 haneli PIN belirleyin",
+  "pinEnter": "PIN kodunu girin",
+  "pinWrong": "Yanlış PIN!",
+  "pinSaved": "PIN kaydedildi!",
+  "pinOld": "Mevcut PIN",
+  "pinNew": "Yeni PIN",
+  "pinChanged": "PIN başarıyla değiştirildi!",
+  "pinWrongOld": "Mevcut PIN yanlış!",
+  "pinWrongLength": "Yeni PIN 4 haneli olmalı!",
+  "cancel": "İptal",
+  "change": "Değiştir",
+  "deleteConfirmTitle": "Silme Onayı",
+  "deleteConfirmContent": "'{title}' harcamasını silmek istiyor musunuz?",
+  "@deleteConfirmContent": {
+    "placeholders": {
+      "title": { "type": "Object" }
+    }
+  },
+  "delete": "Sil",
+  "update": "Güncelle",
+  "save": "Kaydet",
+  "addExpense": "Yeni Harcama",
+  "noExpenses": "Hiç harcama yok.",
+  "error": "Hata: {error}",
+  "@error": {
+    "placeholders": {
+      "error": { "type": "Object" }
+    }
+  },
+  "totalExpense": "Toplam Harcama",
+  "date": "Tarih",
+  "dateSelect": "Tarih Seç",
+  "title": "Başlık",
+  "amount": "Tutar",
+  "category": "Kategori",
+  "fillAllFields": "Lütfen tüm alanları doldurun ve geçerli bir tutar girin.",
+  "barChart": "Bar Grafiğe Geç",
+  "pieChart": "Pasta Grafiğe Geç",
+  "settingsTooltip": "Ayarlar",
+  "csvExported": "CSV dosyası kaydedildi: {filePath}",
+  "@csvExported": {
+    "placeholders": {
+      "filePath": { "type": "Object" }
+    }
+  },
+  "pdfExported": "PDF dosyası kaydedildi: {filePath}",
+  "@pdfExported": {
+    "placeholders": {
+      "filePath": { "type": "Object" }
+    }
+  },
+  "csvExportError": "CSV dışa aktarma hatası: {error}",
+  "@csvExportError": {
+    "placeholders": {
+      "error": { "type": "Object" }
+    }
+  },
+  "pdfExportError": "PDF dışa aktarma hatası: {error}",
+  "@pdfExportError": {
+    "placeholders": {
+      "error": { "type": "Object" }
+    }
+  },
+  "errorMsg": "Bir hata oluştu",
+  "pinCorrect": "PIN doğru!",
+  
+  "total": "Toplam",
+  "mostSpentCategory": "En çok harcanan",
+  "mostExpensiveDay": "En pahalı gün",
+  "advancedFilters": "Gelişmiş Filtreler",
+  "search": "Arama",
+  "dateRange": "Tarih Aralığı",
+  "amountRange": "Tutar Aralığı",
+  "categories": "Kategoriler",
+  "startDate": "Başlangıç Tarihi",
+  "endDate": "Bitiş Tarihi",
+  "minAmount": "Minimum Tutar",
+  "maxAmount": "Maksimum Tutar",
+  "searchQuery": "Arama Sorgusu",
+  "applyFilters": "Filtreleri Uygula",
+  "clearAllFilters": "Tüm Filtreleri Temizle",
+  "importFromCSV": "CSV'den İçe Aktar",
+  "importFromPDF": "PDF'den İçe Aktar",
+  "budgetManagement": "Bütçe Yönetimi",
+  "backupManagement": "Yedekleme Yönetimi",
+  "currency": "Para Birimi",
+  "defaultCategory": "Varsayılan Kategori",
+  "defaultAlarmTime": "Varsayılan Alarm Saati",
+  "categoryFilter": "Kategori: {category}",
+  "@categoryFilter": {
+    "placeholders": {
+      "category": { "type": "Object" }
+    }
+  },
+  "categoriesFilter": "Kategoriler: {count}",
+  "@categoriesFilter": {
+    "placeholders": {
+      "count": { "type": "Object" }
+    }
+  },
+  "searchFilter": "Arama: \"{query}\"",
+  "@searchFilter": {
+    "placeholders": {
+      "query": { "type": "Object" }
+    }
+  },
+  "notificationCategoryAmount": "Kategori: {category}, Tutar: {amount}{currency}",
+  "@notificationCategoryAmount": {
+    "placeholders": {
+      "category": { "type": "Object" },
+      "amount": { "type": "Object" },
+      "currency": { "type": "Object" }
+    }
+  },
+  "language": "Dil",
+  "themeSelect": "Tema Seçimi",
+  "systemDefault": "Sistem Varsayılanı",
+  "lightTheme": "Açık Tema",
+  "darkTheme": "Koyu Tema",
+  "exportCSV": "CSV olarak dışa aktar",
+  "exportPDF": "PDF olarak dışa aktar",
+  "pinChange": "PIN değiştir",
+  "pinSet": "4 haneli PIN belirleyin",
+  "pinEnter": "PIN kodunu girin",
+  "pinWrong": "Yanlış PIN!",
+  "pinSaved": "PIN kaydedildi!",
+  "pinOld": "Mevcut PIN",
+  "pinNew": "Yeni PIN",
+  "pinChanged": "PIN başarıyla değiştirildi!",
+  "pinWrongOld": "Mevcut PIN yanlış!",
+  "pinWrongLength": "Yeni PIN 4 haneli olmalı!",
+  "cancel": "İptal",
+  "change": "Değiştir",
+  "deleteConfirmTitle": "Silme Onayı",
+  "deleteConfirmContent": "'{title}' harcamasını silmek istiyor musunuz?",
+  "@deleteConfirmContent": {
+    "placeholders": {
+      "title": { "type": "Object" }
+    }
+  }
+} 
