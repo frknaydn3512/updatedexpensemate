@@ -1,8 +1,8 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import '../data/database/app_database.dart';
+import '../../data/database/app_database.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import '../services/currency_service.dart';
+import '../../services/currency_service.dart';
 
 
 class ExpensePieChart extends StatelessWidget {
@@ -60,9 +60,10 @@ class ExpensePieChart extends StatelessWidget {
     });
 
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         SizedBox(
-          height: 180,
+          height: 150,
           child: PieChart(
             PieChartData(
               sections: sections,
@@ -81,10 +82,10 @@ class ExpensePieChart extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: 10),
-        Wrap(
-          spacing: 8,
-          runSpacing: 4,
+                 const SizedBox(height: 30),
+                 Wrap(
+           spacing: 18,
+           runSpacing: 0,
           alignment: WrapAlignment.center,
           children: legendItems,
         ),
@@ -257,7 +258,7 @@ class ExpenseChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
-    final totalAmount = _getTotalAmount(expenses);
+    final totalAmountOrNull = _getTotalAmountOrNull(expenses);
     final categoryTotals = _getCategoryTotals(expenses);
     final dayTotals = _getDayTotals(expenses);
     
@@ -265,31 +266,34 @@ class ExpenseChart extends StatelessWidget {
     final mostExpensiveDay = _getMostExpensiveDay(dayTotals);
 
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        // Analiz kartları
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                 // Analiz kartları
+         Padding(
+           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Expanded(
+              Flexible(
                 child: Container(
                   height: 100,
                   child: FittedBox(
                     fit: BoxFit.scaleDown,
-                    child: _AnalysisCard(
-                      title: localizations.total,
-                      value: CurrencyService.formatAmount(CurrencyService.convertAmount(totalAmount, currency), currency),
-                      icon: Icons.summarize,
-                      color: const Color(0xFF3B82F6),
-                      backgroundColor: const Color(0xFFDBEAFE),
-                    ),
+                                         child: _AnalysisCard(
+                       title: localizations.total,
+                       value: totalAmountOrNull != null 
+                           ? CurrencyService.formatAmount(CurrencyService.convertAmount(totalAmountOrNull, currency), currency)
+                           : '-',
+                       icon: Icons.summarize,
+                       color: const Color(0xFF3B82F6),
+                       backgroundColor: const Color(0xFFDBEAFE),
+                     ),
                   ),
                 ),
               ),
               const SizedBox(width: 8),
-              Expanded(
+              Flexible(
                 child: Container(
                   height: 100,
                   child: FittedBox(
@@ -307,7 +311,7 @@ class ExpenseChart extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Expanded(
+              Flexible(
                 child: Container(
                   height: 100,
                   child: FittedBox(
@@ -327,25 +331,29 @@ class ExpenseChart extends StatelessWidget {
             ],
           ),
         ),
-        // Grafik
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-            child: Center(
-              child: showPieChart
-                  ? ExpensePieChart(
-                      expenses: expenses,
-                      currency: currency,
-                      onCategoryTap: onCategoryTap,
-                    )
-                  : ExpenseBarChart(
-                      expenses: expenses,
-                      currency: currency,
-                      onDayTap: onDayTap,
-                    ),
+                 // 3'lü kartlar ile grafik arasındaki boşluk
+         const SizedBox(height: 0),
+                 // Grafik - sadece harcama varsa göster
+         if (expenses.isNotEmpty)
+           Container(
+             height: 350,
+                         child: Padding(
+               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+              child: Center(
+                child: showPieChart
+                    ? ExpensePieChart(
+                        expenses: expenses,
+                        currency: currency,
+                        onCategoryTap: onCategoryTap,
+                      )
+                    : ExpenseBarChart(
+                        expenses: expenses,
+                        currency: currency,
+                        onDayTap: onDayTap,
+                      ),
+              ),
             ),
           ),
-        ),
       ],
     );
   }
@@ -374,6 +382,11 @@ class ExpenseChart extends StatelessWidget {
     if (categoryTotals.isEmpty) return null;
     final entry = categoryTotals.entries.reduce((a, b) => a.value > b.value ? a : b);
     return entry.key;
+  }
+
+  double? _getTotalAmountOrNull(List<Expense> expenses) {
+    if (expenses.isEmpty) return null;
+    return expenses.fold(0.0, (sum, e) => (sum ?? 0.0) + e.amount!);
   }
 
   int? _getMostExpensiveDay(Map<int, double> dayTotals) {

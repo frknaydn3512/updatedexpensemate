@@ -6,7 +6,7 @@ import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../data/database/app_database.dart';
 import '../../services/notification_service.dart';
-import '../pin_lock_screen.dart';
+import '../little_things/pin_lock_screen.dart';
 
 class ExpenseForm extends StatefulWidget {
   final Expense? expense; // null ise yeni harcama, değilse düzenleme
@@ -667,7 +667,7 @@ class _ExpenseFormState extends State<ExpenseForm> {
   Widget build(BuildContext context) {
     // Direkt form açılsın
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (widget.expense == null && mounted && !_formShown) {
+      if (mounted && !_formShown) {
         _formShown = true;
         _showForm();
       }

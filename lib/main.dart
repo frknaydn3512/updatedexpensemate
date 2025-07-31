@@ -7,7 +7,7 @@ import 'services/notification_service.dart'; // Yeni ekledik
 import 'ui/home_page.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'ui/pin_lock_screen.dart';
+import 'ui/little_things/pin_lock_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

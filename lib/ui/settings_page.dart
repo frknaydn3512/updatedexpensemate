@@ -27,6 +27,7 @@ class _SettingsPageState extends State<SettingsPage> {
   String _currency = '₺';
   String _defaultCategory = '';
   TimeOfDay? _defaultAlarmTime;
+  bool _isLoading = true;
   final List<String> _currencies = ['₺', '\$', '€', '£'];
   final List<String> categories = [
     'Gıda',
@@ -49,7 +50,10 @@ class _SettingsPageState extends State<SettingsPage> {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       _currency = prefs.getString('currency') ?? '₺';
-      _defaultCategory = prefs.getString('default_category') ?? categories.first;
+      final savedCategory = prefs.getString('default_category');
+      _defaultCategory = savedCategory != null && categories.contains(savedCategory) 
+          ? savedCategory 
+          : categories.first;
       final alarmStr = prefs.getString('default_alarm_time');
       if (alarmStr != null) {
         final parts = alarmStr.split(':');
@@ -57,6 +61,7 @@ class _SettingsPageState extends State<SettingsPage> {
           _defaultAlarmTime = TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
         }
       }
+      _isLoading = false;
     });
   }
 
@@ -83,6 +88,14 @@ class _SettingsPageState extends State<SettingsPage> {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final languageProvider = Provider.of<LanguageProvider>(context);
     final localizations = AppLocalizations.of(context)!;
+
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -156,7 +169,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 Text(localizations.currency, style: Theme.of(context).textTheme.titleMedium),
                 DropdownButton<String>(
                   value: _currency,
-                  items: _currencies.map((c) => DropdownMenuItem(
+                  items: _currencies.toSet().map((c) => DropdownMenuItem(
                     value: c, 
                     child: Text(c)
                   )).toList(),
@@ -175,7 +188,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 Text(localizations.defaultCategory, style: Theme.of(context).textTheme.titleMedium),
                 DropdownButton<String>(
                   value: _defaultCategory,
-                  items: categories.map((c) => DropdownMenuItem(
+                  items: categories.toSet().map((c) => DropdownMenuItem(
                     value: c, 
                     child: Text(c)
                   )).toList(),

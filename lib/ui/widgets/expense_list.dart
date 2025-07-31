@@ -93,56 +93,58 @@ class _ExpenseListItem extends StatelessWidget {
           ),
         ],
       ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                const Color(0xFF6366F1).withOpacity(0.8),
-                const Color(0xFF8B5CF6).withOpacity(0.8),
-              ],
-            ),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: const Icon(Icons.payments, color: Colors.white, size: 16),
-        ),
-        title: Text(
-          expense.title,
-          style: const TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 14,
-            color: Color(0xFF1F2937),
-          ),
-        ),
-        subtitle: Text(
-          "${expense.category} • ${expense.date.toLocal().toString().split(' ')[0]}",
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey.shade600,
-          ),
-        ),
-        trailing: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: const Color(0xFF6366F1).withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Text(
-            CurrencyService.formatAmount(
-              CurrencyService.convertAmount(expense.amount, currency),
-              currency
-            ),
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-              color: Color(0xFF6366F1),
-            ),
-          ),
-        ),
+      child: GestureDetector(
         onTap: onEdit,
         onLongPress: () => _showDeleteDialog(context),
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          leading: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFF6366F1).withOpacity(0.8),
+                  const Color(0xFF8B5CF6).withOpacity(0.8),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.payments, color: Colors.white, size: 16),
+          ),
+          title: Text(
+            expense.title,
+            style: const TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 14,
+              color: Color(0xFF1F2937),
+            ),
+          ),
+          subtitle: Text(
+            "${expense.category} • ${expense.date.toLocal().toString().split(' ')[0]}",
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey.shade600,
+            ),
+          ),
+          trailing: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: const Color(0xFF6366F1).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              CurrencyService.formatAmount(
+                CurrencyService.convertAmount(expense.amount, currency),
+                currency
+              ),
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                color: Color(0xFF6366F1),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

@@ -62,7 +62,7 @@ class ExpenseFilters extends StatelessWidget {
       children: [
         // Kategori dropdown
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
           child: Container(
             decoration: BoxDecoration(
               color: Colors.transparent,

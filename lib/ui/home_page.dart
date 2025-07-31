@@ -1,4 +1,3 @@
-// lib/ui/widgets/home_page.dart (Lütfen bu dosyanın içeriğinin en son sana verdiğimle aynı olduğunu DOĞRULA)
 import 'package:drift/drift.dart' show Value;
 import 'widgets/expense_summary_card.dart';
 import 'package:flutter/material.dart';
@@ -9,8 +8,8 @@ import 'managements/alarm_management_page.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-import 'package:expensemate2/services/notification_service.dart'; // Bildirim servisini ekle
-import 'package:shared_preferences/shared_preferences.dart'; // Alarmı kaydetmek için ekle
+import 'package:expensemate2/services/notification_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -18,7 +17,7 @@ import 'package:lottie/lottie.dart';
 import 'widgets/expense_form.dart';
 import 'widgets/expense_list.dart';
 import 'widgets/expense_filters.dart';
-import 'charts.dart';
+import 'little_things/charts.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -28,7 +27,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // Kategori listesi (isim, ikon, renk)
   final List<Map<String, dynamic>> categories = [
     {'name': 'Gıda', 'icon': Icons.fastfood, 'color': Colors.orange},
     {'name': 'Ulaşım', 'icon': Icons.directions_bus, 'color': Colors.blue},
@@ -39,13 +37,13 @@ class _HomePageState extends State<HomePage> {
     {'name': 'Alışveriş', 'icon': Icons.shopping_cart, 'color': Colors.pink},
     {'name': 'Diğer', 'icon': Icons.more_horiz, 'color': Colors.grey},
   ];
+  
   late Future<List<Expense>> _expensesFuture;
   String? selectedCategory;
-  int? selectedDay; // Gün filtresi için
+  int? selectedDay;
   int selectedMonth = DateTime.now().month;
   int selectedYear = DateTime.now().year;
   
-  // Gelişmiş filtreleme için yeni değişkenler
   DateTime? startDate;
   DateTime? endDate;
   double? minAmount;
@@ -102,124 +100,186 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-
-
   void _refreshExpenses() {
-    final database = Provider.of<AppDatabase>(context, listen: false);
     setState(() {
-      _expensesFuture = database.getExpensesByMonth(selectedMonth, selectedYear, selectedCategory);
+      _expensesFuture = _getFilteredExpenses();
     });
   }
 
-  // Gelişmiş filtreleme dialogu
+  Future<List<Expense>> _getFilteredExpenses() async {
+    final database = Provider.of<AppDatabase>(context, listen: false);
+    List<Expense> expenses = await database.getAllExpenses();
+
+    // Kategori filtresi
+    if (selectedCategory != null) {
+      expenses = expenses.where((e) => e.category == selectedCategory).toList();
+    }
+
+    // Gün filtresi
+    if (selectedDay != null) {
+      expenses = expenses.where((e) => e.date.day == selectedDay).toList();
+    }
+
+    // Ay ve yıl filtresi
+    expenses = expenses.where((e) => e.date.month == selectedMonth && e.date.year == selectedYear).toList();
+
+    // Gelişmiş filtreler
+    if (startDate != null) {
+      expenses = expenses.where((e) => e.date.isAfter(startDate!.subtract(const Duration(days: 1)))).toList();
+    }
+    if (endDate != null) {
+      expenses = expenses.where((e) => e.date.isBefore(endDate!.add(const Duration(days: 1)))).toList();
+    }
+    if (minAmount != null) {
+      expenses = expenses.where((e) => e.amount >= minAmount!).toList();
+    }
+    if (maxAmount != null) {
+      expenses = expenses.where((e) => e.amount <= maxAmount!).toList();
+    }
+    if (selectedCategories.isNotEmpty) {
+      expenses = expenses.where((e) => selectedCategories.contains(e.category)).toList();
+    }
+    if (searchQuery.isNotEmpty) {
+      expenses = expenses.where((e) => e.title.toLowerCase().contains(searchQuery.toLowerCase())).toList();
+    }
+
+    return expenses;
+  }
+
+  void _showExpenseForm({Expense? expense}) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => ExpenseForm(
+        expense: expense,
+        categories: categories,
+        currency: _currency,
+        defaultCategory: _defaultCategory,
+        defaultAlarmTime: _defaultAlarmTime,
+        onExpenseSaved: () {
+          _refreshExpenses();
+          Navigator.pop(context);
+        },
+      ),
+    );
+  }
+
+  void _editExpenseForm(Expense expense) {
+    _showExpenseForm(expense: expense);
+  }
+
+  void _deleteExpense(Expense expense) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Harcamayı Sil'),
+        content: const Text('Bu harcamayı silmek istediğinizden emin misiniz?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('İptal'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Sil'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      final database = Provider.of<AppDatabase>(context, listen: false);
+      await database.deleteExpense(expense.id);
+      _refreshExpenses();
+    }
+  }
+
   void _showAdvancedFiltersDialog() {
-    final localizations = AppLocalizations.of(context)!;
     showDialog(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: Text(localizations.advancedFilters),
-          content: SingleChildScrollView(
+      builder: (context) => AlertDialog(
+        title: const Text('Gelişmiş Filtreler'),
+        content: StatefulBuilder(
+          builder: (context, setState) => SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Arama
-                                  TextField(
-                    decoration: InputDecoration(
-                      labelText: localizations.search,
-                    hintText: 'Başlık veya kategori ara...',
-                    prefixIcon: Icon(Icons.search),
-                  ),
-                  onChanged: (value) => setDialogState(() => searchQuery = value),
-                ),
-                const SizedBox(height: 16),
-
                 // Tarih aralığı
-                Text(localizations.dateRange, style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text('Tarih Aralığı'),
                 Row(
                   children: [
                     Expanded(
-                      child: TextButton.icon(
-                        icon: const Icon(Icons.calendar_today),
-                        label: Text(startDate?.toString().split(' ')[0] ?? 'Başlangıç'),
+                      child: TextButton(
                         onPressed: () async {
-                          final picked = await showDatePicker(
+                          final date = await showDatePicker(
                             context: context,
                             initialDate: startDate ?? DateTime.now(),
                             firstDate: DateTime(2020),
                             lastDate: DateTime.now(),
                           );
-                          if (picked != null) {
-                            setDialogState(() => startDate = picked);
+                          if (date != null) {
+                            setState(() => startDate = date);
                           }
                         },
+                        child: Text(startDate?.toString().split(' ')[0] ?? 'Başlangıç'),
                       ),
                     ),
                     Expanded(
-                      child: TextButton.icon(
-                        icon: const Icon(Icons.calendar_today),
-                        label: Text(endDate?.toString().split(' ')[0] ?? 'Bitiş'),
+                      child: TextButton(
                         onPressed: () async {
-                          final picked = await showDatePicker(
+                          final date = await showDatePicker(
                             context: context,
                             initialDate: endDate ?? DateTime.now(),
                             firstDate: DateTime(2020),
                             lastDate: DateTime.now(),
                           );
-                          if (picked != null) {
-                            setDialogState(() => endDate = picked);
+                          if (date != null) {
+                            setState(() => endDate = date);
                           }
                         },
+                        child: Text(endDate?.toString().split(' ')[0] ?? 'Bitiş'),
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 16),
-
                 // Tutar aralığı
-                Text(localizations.amountRange, style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text('Tutar Aralığı'),
                 Row(
                   children: [
                     Expanded(
-                      child: TextField(
-                        decoration: const InputDecoration(
-                          labelText: 'Min Tutar',
-                          hintText: '0',
-                        ),
+                      child: TextFormField(
+                        decoration: const InputDecoration(labelText: 'Min Tutar'),
                         keyboardType: TextInputType.number,
-                        onChanged: (value) => setDialogState(() => minAmount = double.tryParse(value)),
+                        onChanged: (value) => minAmount = double.tryParse(value),
                       ),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: TextField(
-                        decoration: const InputDecoration(
-                          labelText: 'Max Tutar',
-                          hintText: '1000',
-                        ),
+                      child: TextFormField(
+                        decoration: const InputDecoration(labelText: 'Max Tutar'),
                         keyboardType: TextInputType.number,
-                        onChanged: (value) => setDialogState(() => maxAmount = double.tryParse(value)),
+                        onChanged: (value) => maxAmount = double.tryParse(value),
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 16),
-
-                // Çoklu kategori seçimi
-                Text(localizations.categories, style: TextStyle(fontWeight: FontWeight.bold)),
+                // Kategori seçimi
+                const Text('Kategoriler'),
                 Wrap(
-                  spacing: 8,
-                  children: categories.map((cat) {
-                    final isSelected = selectedCategories.contains(cat['name']);
+                  children: categories.map((category) {
+                    final isSelected = selectedCategories.contains(category['name']);
                     return FilterChip(
-                      label: Text(cat['name']),
+                      label: Text(category['name']),
                       selected: isSelected,
                       onSelected: (selected) {
-                        setDialogState(() {
+                        setState(() {
                           if (selected) {
-                            selectedCategories.add(cat['name']);
+                            selectedCategories.add(category['name']);
                           } else {
-                            selectedCategories.remove(cat['name']);
+                            selectedCategories.remove(category['name']);
                           }
                         });
                       },
@@ -229,265 +289,80 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                setDialogState(() {
-                  startDate = null;
-                  endDate = null;
-                  minAmount = null;
-                  maxAmount = null;
-                  selectedCategories.clear();
-                  searchQuery = '';
-                });
-              },
-              child: const Text('Temizle'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: Text(localizations.cancel),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(ctx).pop();
-                _refreshExpenses();
-              },
-              child: Text(localizations.applyFilters),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Bütçe uyarılarını kontrol et
-  Future<void> _checkBudgetWarnings() async {
-    final database = Provider.of<AppDatabase>(context, listen: false);
-    final usage = await database.getBudgetUsage(selectedMonth, selectedYear);
-    
-    for (final entry in usage.entries) {
-      if (entry.value > 100) {
-        // Bütçe aşımı uyarısı
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('⚠️ ${entry.key == 'general' ? 'Genel' : entry.key} bütçesi %${entry.value.toStringAsFixed(1)} aşıldı!'),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 5),
-            ),
-          );
-        }
-      } else if (entry.value > 80) {
-        // Bütçe yaklaşım uyarısı
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('⚠️ ${entry.key == 'general' ? 'Genel' : entry.key} bütçesi %${entry.value.toStringAsFixed(1)} kullanıldı!'),
-              backgroundColor: Colors.orange,
-              duration: const Duration(seconds: 3),
-            ),
-          );
-        }
-      }
-    }
-  }
-
-
-
-  // Gelişmiş filtreleme fonksiyonu
-  List<Expense> _applyAdvancedFilters(List<Expense> expenses) {
-    return expenses.where((expense) {
-      // Arama sorgusu
-      if (searchQuery.isNotEmpty) {
-        final query = searchQuery.toLowerCase();
-        if (!expense.title.toLowerCase().contains(query) &&
-            !expense.category.toLowerCase().contains(query)) {
-          return false;
-        }
-      }
-
-      // Tarih aralığı
-      if (startDate != null && expense.date.isBefore(startDate!)) {
-        return false;
-      }
-      if (endDate != null && expense.date.isAfter(endDate!)) {
-        return false;
-      }
-
-      // Tutar aralığı
-      if (minAmount != null && expense.amount < minAmount!) {
-        return false;
-      }
-      if (maxAmount != null && expense.amount > maxAmount!) {
-        return false;
-      }
-
-      // Çoklu kategori
-      if (selectedCategories.isNotEmpty && !selectedCategories.contains(expense.category)) {
-        return false;
-      }
-
-      return true;
-    }).toList();
-  }
-
-  void _deleteExpense(Expense expense) async {
-    final database = Provider.of<AppDatabase>(context, listen: false);
-    await database.deleteExpense(expense.id);
-    _refreshExpenses();
-  }
-
-  void _editExpenseForm(Expense expense) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
-        child: ExpenseForm(
-          expense: expense,
-          categories: categories,
-          currency: _currency,
-          defaultAlarmTime: _defaultAlarmTime,
-          defaultCategory: _defaultCategory,
-          onExpenseSaved: () {
-            Navigator.pop(context);
-            _refreshExpenses();
-          },
-        ),
-      ),
-    );
-  }
-
-  void _showExpenseForm() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
-        child: ExpenseForm(
-          categories: categories,
-          currency: _currency,
-          defaultAlarmTime: _defaultAlarmTime,
-          defaultCategory: _defaultCategory,
-          onExpenseSaved: () {
-            Navigator.pop(context);
-            _refreshExpenses();
-            _checkBudgetWarnings();
-          },
-        ),
-      ),
-    );
-  }
-
-  void _addExpenseForm() {
-    _showExpenseForm();
-  }
-
-  // Bildirim planlandıktan hemen sonra SharedPreferences'a kaydet
-  Future<void> _saveAlarmToPrefs(int id, int hour, int minute) async {
-    final prefs = await SharedPreferences.getInstance();
-    final alarmList = prefs.getStringList('alarms') ?? [];
-    alarmList.add("$id:$hour:$minute");
-    await prefs.setStringList('alarms', alarmList);
-  }
-
-  // Harcama eklenince başarı animasyonu göster
-  // _addExpenseForm ve _editExpenseForm içindeki harcama ekleme/güncelleme işlemi başarılı olduğunda
-  // Navigator.pop(context); _refreshExpenses();
-  // yerine önce başarı animasyonu göster, sonra kapat
-  // Bunu bir helper fonksiyon ile yap:
-  Future<void> _showSuccessAnimation(BuildContext context) async {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => Center(
-        child: SizedBox(
-          width: 360,
-          height: 360,
-          child: Lottie.asset('assets/lottie/success.json', repeat: false),
-        ),
-      ),
-    );
-    await Future.delayed(const Duration(milliseconds: 900));
-    if (context.mounted) Navigator.of(context).pop();
-  }
-
-  // Harcama eklenince başarı banner'ı göster
-  void _showSuccessBanner(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showMaterialBanner(
-      MaterialBanner(
-        backgroundColor: Colors.green.shade600,
-        content: Row(
-          children: [
-            Icon(Icons.check_circle, color: Colors.white),
-            SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                message,
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
         ),
         actions: [
           TextButton(
-            onPressed: () => ScaffoldMessenger.of(context).hideCurrentMaterialBanner(),
-            child: Text('Kapat', style: TextStyle(color: Colors.white)),
+            onPressed: () {
+              setState(() {
+                startDate = null;
+                endDate = null;
+                minAmount = null;
+                maxAmount = null;
+                selectedCategories.clear();
+              });
+              _refreshExpenses();
+              Navigator.pop(context);
+            },
+            child: const Text('Temizle'),
+          ),
+          TextButton(
+            onPressed: () {
+              _refreshExpenses();
+              Navigator.pop(context);
+            },
+            child: const Text('Uygula'),
           ),
         ],
       ),
     );
-    Future.delayed(const Duration(seconds: 2), () {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).hideCurrentMaterialBanner();
-      }
-    });
   }
 
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
+    
     return Scaffold(
       appBar: AppBar(
-        centerTitle: false, // Başlığı sola yasla
-        title: const Text('Cüzdanım', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+        title: const Text('Cüzdanım'),
+        titleTextStyle: const TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+        ),
+        centerTitle: false,
         actions: [
           IconButton(
             icon: const Icon(Icons.alarm),
-            tooltip: 'Alarm Yönetimi',
             onPressed: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const AlarmManagementPage()),
               );
             },
+            tooltip: 'Alarm Yönetimi',
           ),
           IconButton(
             icon: const Icon(Icons.filter_list),
-            tooltip: localizations.advancedFilters,
-            onPressed: _showAdvancedFiltersDialog,
+            onPressed: () => _showAdvancedFiltersDialog(),
+            tooltip: 'Filtreleme',
           ),
           IconButton(
             icon: Icon(showPieChart ? Icons.bar_chart : Icons.pie_chart),
-            tooltip: showPieChart ? localizations.barChart : localizations.pieChart,
             onPressed: () {
               setState(() {
                 showPieChart = !showPieChart;
               });
             },
+            tooltip: 'Grafik Türü',
           ),
           IconButton(
             icon: const Icon(Icons.settings),
-            tooltip: localizations.settingsTooltip,
-            onPressed: () async {
-              await Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (ctx) => const SettingsPage(),
-                ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsPage()),
               );
-              await _loadPrefs();
-              _refreshExpenses();
             },
+            tooltip: 'Ayarlar',
           ),
         ],
       ),
@@ -496,170 +371,166 @@ class _HomePageState extends State<HomePage> {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text(localizations.error(snapshot.error.toString())));
+          }
+
+          if (snapshot.hasError) {
+            return Center(child: Text('Hata: ${snapshot.error}'));
           }
 
           final expenses = snapshot.data ?? [];
-          // Gelişmiş filtreleme uygula
-          final filteredExpenses = _applyAdvancedFilters(
-            selectedDay != null
-                ? expenses.where((e) => e.date.day == selectedDay).toList()
-                : expenses
-          );
-          final totalAmount = expenses.fold(0.0, (sum, e) => sum + e.amount);
+          final filteredExpenses = expenses;
 
-
-
-          return SingleChildScrollView(
-            child: Column(
-              children: [
-                // Toplam harcama kartı
-                ExpenseSummaryCard(
-                  totalAmount: totalAmount,
-                  currency: _currency,
-                ),
-                // Grafik ile üstteki widget'lar arasına boşluk
-                const SizedBox(height: 10),
-                // Analiz kartları ve grafik
-                Container(
-                  
-                  height: 400,
-                  child: ExpenseChart(
-                    expenses: expenses,
-                    showPieChart: showPieChart,
-                    currency: _currency,
-                    onCategoryTap: (cat) {
-                      setState(() {
-                        selectedCategory = cat;
-                        selectedDay = null;
-                        _refreshExpenses();
-                      });
-                    },
-                    onDayTap: (day) {
-                      setState(() {
-                        selectedDay = day;
-                        selectedCategory = null;
-                      });
-                    },
-                  ),
-                ),
-                // Grafik ile kategori seçme alanı arasına boşluk
-                const SizedBox(height: 20),
-              // Filtreleme
-              ExpenseFilters(
-                selectedCategory: selectedCategory,
-                selectedDay: selectedDay,
-                startDate: startDate,
-                endDate: endDate,
-                minAmount: minAmount,
-                maxAmount: maxAmount,
-                selectedCategories: selectedCategories,
-                searchQuery: searchQuery,
-                categories: categories,
-                onCategoryChanged: (value) {
-                  setState(() {
-                    selectedCategory = value;
-                    selectedDay = null;
-                    _refreshExpenses();
-                  });
-                },
-                onDayChanged: (value) {
-                  setState(() {
-                    selectedDay = value;
-                    selectedCategory = null;
-                  });
-                },
-                onStartDateChanged: (value) {
-                  setState(() {
-                    startDate = value;
-                    _refreshExpenses();
-                  });
-                },
-                onEndDateChanged: (value) {
-                  setState(() {
-                    endDate = value;
-                    _refreshExpenses();
-                  });
-                },
-                onMinAmountChanged: (value) {
-                  setState(() {
-                    minAmount = value;
-                    _refreshExpenses();
-                  });
-                },
-                onMaxAmountChanged: (value) {
-                  setState(() {
-                    maxAmount = value;
-                    _refreshExpenses();
-                  });
-                },
-                onSelectedCategoriesChanged: (value) {
-                  setState(() {
-                    selectedCategories = value;
-                    _refreshExpenses();
-                  });
-                },
-                onSearchQueryChanged: (value) {
-                  setState(() {
-                    searchQuery = value;
-                    _refreshExpenses();
-                  });
-                },
-                onClearFilters: () {
-                  setState(() {
-                    selectedCategory = null;
-                    selectedDay = null;
-                    startDate = null;
-                    endDate = null;
-                    minAmount = null;
-                    maxAmount = null;
-                    selectedCategories.clear();
-                    searchQuery = '';
-                    _refreshExpenses();
-                  });
-                },
-                onShowAdvancedFilters: () => _showAdvancedFiltersDialog(),
-              ),
-              if (expenses.isEmpty)
-                Container(
-                  height: 300,
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SizedBox(
-                          width: 120,
-                          height: 120,
-                          child: Lottie.asset('assets/lottie/empty.json', repeat: true),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          localizations.noExpenses,
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Hadi ilk harcamanı ekle!',
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-              else
-                Container(
-                  height: 300,
-                  child: ExpenseList(
-                    expenses: filteredExpenses,
-                    currency: _currency,
-                    onEditExpense: _editExpenseForm,
-                    onDeleteExpense: _deleteExpense,
-                  ),
-                ),
-            ],
-          ),
-        );
+                                return SingleChildScrollView(
+             child: Column(
+               children: [
+                                // ExpenseChart her zaman göster (3'lü kartlar için)
+               Container(
+                 height: expenses.isEmpty ? 150 : 450,
+                   child: ExpenseChart(
+                     expenses: expenses,
+                     showPieChart: showPieChart,
+                     currency: _currency,
+                     onCategoryTap: (cat) {
+                       setState(() {
+                         selectedCategory = cat;
+                         selectedDay = null;
+                         _refreshExpenses();
+                       });
+                     },
+                     onDayTap: (day) {
+                       setState(() {
+                         selectedDay = day;
+                         selectedCategory = null;
+                       });
+                     },
+                   ),
+                 ),
+                 // Boş olduğunda "No expenses yet" kısmını göster
+                 if (expenses.isEmpty)
+                   Container(
+                     height: 300,
+                     child: Center(
+                       child: Column(
+                         mainAxisSize: MainAxisSize.min,
+                         mainAxisAlignment: MainAxisAlignment.center,
+                         children: [
+                           SizedBox(
+                             width: 150,
+                             height: 150,
+                             child: Lottie.asset('assets/lottie/empty.json', repeat: true),
+                           ),
+                           const SizedBox(height: 24),
+                           Text(
+                             localizations.noExpenses,
+                             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                               color: Colors.grey[600],
+                               fontWeight: FontWeight.w500,
+                             ),
+                             textAlign: TextAlign.center,
+                           ),
+                           const SizedBox(height: 8),
+                           Text(
+                             'Hadi ilk harcamanı ekle!',
+                             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                               color: Colors.grey[500],
+                             ),
+                             textAlign: TextAlign.center,
+                           ),
+                         ],
+                       ),
+                     ),
+                   ),
+                                   // Grafik ile kategori seçme alanı arasına boşluk
+                  const SizedBox(height: 0),
+                 // Filtreleme - sadece harcama varsa göster
+                 if (expenses.isNotEmpty)
+                   ExpenseFilters(
+                     selectedCategory: selectedCategory,
+                     selectedDay: selectedDay,
+                     startDate: startDate,
+                     endDate: endDate,
+                     minAmount: minAmount,
+                     maxAmount: maxAmount,
+                     selectedCategories: selectedCategories,
+                     searchQuery: searchQuery,
+                     categories: categories,
+                     onCategoryChanged: (value) {
+                       setState(() {
+                         selectedCategory = value;
+                         selectedDay = null;
+                         _refreshExpenses();
+                       });
+                     },
+                     onDayChanged: (value) {
+                       setState(() {
+                         selectedDay = value;
+                         selectedCategory = null;
+                       });
+                     },
+                     onStartDateChanged: (value) {
+                       setState(() {
+                         startDate = value;
+                         _refreshExpenses();
+                       });
+                     },
+                     onEndDateChanged: (value) {
+                       setState(() {
+                         endDate = value;
+                         _refreshExpenses();
+                       });
+                     },
+                     onMinAmountChanged: (value) {
+                       setState(() {
+                         minAmount = value;
+                         _refreshExpenses();
+                       });
+                     },
+                     onMaxAmountChanged: (value) {
+                       setState(() {
+                         maxAmount = value;
+                         _refreshExpenses();
+                       });
+                     },
+                     onSelectedCategoriesChanged: (value) {
+                       setState(() {
+                         selectedCategories = value;
+                         _refreshExpenses();
+                       });
+                     },
+                     onSearchQueryChanged: (value) {
+                       setState(() {
+                         searchQuery = value;
+                         _refreshExpenses();
+                       });
+                     },
+                     onClearFilters: () {
+                       setState(() {
+                         selectedCategory = null;
+                         selectedDay = null;
+                         startDate = null;
+                         endDate = null;
+                         minAmount = null;
+                         maxAmount = null;
+                         selectedCategories.clear();
+                         searchQuery = '';
+                         _refreshExpenses();
+                       });
+                     },
+                     onShowAdvancedFilters: () => _showAdvancedFiltersDialog(),
+                   ),
+                 if (expenses.isNotEmpty)
+                   Container(
+                     height: 400,
+                     child: ExpenseList(
+                       expenses: filteredExpenses,
+                       currency: _currency,
+                       onEditExpense: _editExpenseForm,
+                       onDeleteExpense: _deleteExpense,
+                     ),
+                   ),
+               ],
+             ),
+           );
         },
       ),
       floatingActionButton: Container(
@@ -688,7 +559,4 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-}
-
-
- 
+} 
